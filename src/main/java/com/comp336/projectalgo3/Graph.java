@@ -2,100 +2,85 @@ package com.comp336.projectalgo3;
 
 import java.util.*;
 
-class Graph<T> {
+public class Graph {
 
-    // We use Hashmap to store the edges in the graph
-    private Map<T, List<T> > map = new HashMap<>();
+    Map<Vertex, LinkedList<Edge>> adjacent = new HashMap<>();
+    static int i = 0;
 
-    // This function adds a new vertex to the graph
-    public void addVertex(T s)
-    {
-        map.put(s, new LinkedList<T>());
+    public Graph() {
     }
 
-    // This function adds the edge
-    // between source to destination
-    public void addEdge(T source,
-                        T destination,
-                        boolean bidirectional)
-    {
+    public void addVertices(Vertex vertices) {
+        adjacent.putIfAbsent(vertices, new LinkedList<>());
+        ((Vertex) vertices).newVertex(this.i);
+        i++;
 
-        if (!map.containsKey(source))
-            addVertex(source);
-
-        if (!map.containsKey(destination))
-            addVertex(destination);
-
-        map.get(source).add(destination);
-        if (bidirectional) {
-            map.get(destination).add(source);
-        }
     }
 
-    // This function gives the count of vertices
-    public void getVertexCount()
-    {
-        System.out.println("The graph has "
-                + map.keySet().size()
-                + " vertex");
+    // Add edges includes adding a node
+    public void addEdge(Vertex a, Vertex b, double w) {
+
+        adjacent.putIfAbsent(a, new LinkedList<>());// Adding a node
+        adjacent.putIfAbsent(b, new LinkedList<>());
+        Edge edge1 = new Edge(b, w);
+        adjacent.get(a).add(edge1);// Adding edge from a to b
     }
 
-    // This function gives the count of edges
-    public void getEdgesCount(boolean bidirection)
-    {
-        int count = 0;
-        for (T v : map.keySet()) {
-            count += map.get(v).size();
-        }
-        if (bidirection) {
-            count = count / 2;
-        }
-        System.out.println("The graph has "
-                + count
-                + " edges.");
-    }
-
-    // This function gives whether
-    // a vertex is present or not.
-    public void hasVertex(T s)
-    {
-        if (map.containsKey(s)) {
-            System.out.println("The graph contains "
-                    + s + " as a vertex.");
-        }
-        else {
-            System.out.println("The graph does not contain "
-                    + s + " as a vertex.");
-        }
-    }
-
-    // This function gives whether an edge is present or not.
-    public void hasEdge(T s, T d)
-    {
-        if (map.get(s).contains(d)) {
-            System.out.println("The graph has an edge between "
-                    + s + " and " + d + ".");
-        }
-        else {
-            System.out.println("The graph has no edge between "
-                    + s + " and " + d + ".");
-        }
-    }
-
-    // Prints the adjacency list of each vertex.
-    @Override
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder();
-
-        for (T v : map.keySet()) {
-            builder.append(v.toString()).append(": ");
-            for (T w : map.get(v)) {
-                builder.append(w.toString()).append(" ");
+    // find edge between two nodes, T(n)=O(n), space =O(c),n=#of neighbors
+    private Edge findEdgeByVertex(Vertex a, Vertex b) {
+        LinkedList<Edge> neighbourEdges = adjacent.get(a);
+        for (Edge edge : neighbourEdges) {// Iterate through neighbours
+            if (edge.getNeighbourVertex().equals(b)) {
+                return edge;//
             }
-            builder.append("\n");
         }
+        return null;// b isn't a neighbour of a
+    }
 
-        return (builder.toString());
+    // Remove direct edge between two vertices Time=O(n), Space=O(c)
+    // Directed graph so only remove edge from a to b
+    public void removeEdge(Vertex a, Vertex b) {
+        LinkedList<Edge> neighbourEdge1 = adjacent.get(a);
+        if (neighbourEdge1 == null)
+            return;
+        Edge edgeFromAToB = findEdgeByVertex(a, b);
+        if (edgeFromAToB != null)
+            neighbourEdge1.remove(edgeFromAToB);
+    }
+
+    // Remove a vertices from directed graph
+    public void removeVertics(Vertex v) {
+        for (Vertex key : adjacent.keySet()) {// Traverse through keySets of map
+            // Findes edge from current vertices to
+            // the vertices we want to remove and remove it
+            Edge edge2 = findEdgeByVertex(key, v);
+            if (edge2 != null)// if such an edge exists
+                adjacent.get(key).remove(edge2);
+        }
+        // After removing all edges going to V
+        // remove V
+        adjacent.remove(v);
+    }
+
+    // Search a vertices by its key
+    public boolean hasNode(Vertex key) {
+        return adjacent.containsKey(key);
+    }
+
+    // Check whether there is direct edge between two nodes
+    public boolean hasEdge(Vertex a, Vertex b) {
+        Edge edge1 = findEdgeByVertex(a, b);
+        return edge1 != null;
+    }
+
+    // Print graph as hashmap Time O(V+E)
+    @Override
+    public String toString() {
+        String s = "Distance in kilometers";
+        for (Vertex key : adjacent.keySet()) {
+            s += key + "," + adjacent.get(key) + "\n";
+        }
+        return s;
     }
 }
+
